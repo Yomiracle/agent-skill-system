@@ -1,0 +1,42 @@
+{
+  "name": "论文审查",
+  "version": "1.0.0",
+  "description": "审查AI/技术论文的方法论、实验设计和结论，输出结构化批判分析",
+  "trigger_keywords": [
+    "论文审查",
+    "审论文",
+    "分析论文",
+    "论文分析",
+    "review paper",
+    "paper review",
+    "论文有什么问题",
+    "分析这篇文章",
+    "批判分析",
+    "论文",
+    "论文审查"
+  ],
+  "input_schema": {
+    "type": "object",
+    "properties": {
+      "论文文本": {
+        "type": "string",
+        "description": "论文全文或详细段落"
+      },
+      "关注维度": {
+        "type": "string",
+        "description": "方法论/实验/结论/创新性"
+      }
+    },
+    "required": [
+      "论文文本"
+    ]
+  },
+  "tags": [
+    "学术",
+    "审查",
+    "技术评估"
+  ],
+  "dependencies": [],
+  "max_context_percent": 30,
+  "created_at": "2026-06-11T16:00:00Z"
+}

@@ -1,0 +1,22 @@
+{
+  "test_cases": [
+    {
+      "id": "case-001-basic-review",
+      "file": "case-001-basic-review.md",
+      "description": "基本合同审查能力验证",
+      "expected_result": "pass"
+    },
+    {
+      "id": "case-002-24-check",
+      "file": "case-002-24-check.md",
+      "description": "违约金审查不引用24%旧规",
+      "expected_result": "pass"
+    },
+    {
+      "id": "case-003-jurisdiction",
+      "file": "case-003-jurisdiction.md",
+      "description": "管辖条款双刃剑识别",
+      "expected_result": "pass"
+    }
+  ]
+}

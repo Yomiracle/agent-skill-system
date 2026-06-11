@@ -1,0 +1,22 @@
+{
+  "test_cases": [
+    {
+      "id": "case-001-classify",
+      "file": "case-001-classify.md",
+      "description": "错误分类能力",
+      "expected_result": "pass"
+    },
+    {
+      "id": "case-002-pattern-match",
+      "file": "case-002-pattern-match.md",
+      "description": "已知模式命中",
+      "expected_result": "pass"
+    },
+    {
+      "id": "case-003-root-cause",
+      "file": "case-003-root-cause.md",
+      "description": "根因定位",
+      "expected_result": "pass"
+    }
+  ]
+}
