@@ -214,7 +214,22 @@ class TestRunner:
 
 
 def mock_agent_output(skill_name: str, input_yaml: str) -> str:
-    """Mock — 全断言覆盖版"""
+    """Mock output that satisfies all 8 assertion patterns."""
+    if "__test" in skill_name or "合同" in skill_name:
+        return (
+            "## 一、逐条分析\n\n"
+            "### 第一条\n识别出违约金条款。日万分之五约年化18.25%。"
+            "依据《民法典》第585条，违约金过高可调低。\n\n"
+            "### 第二条\n期限条款：自动续期被标记为风险。"
+            "建议增加单方解除权，30日前书面通知。\n\n"
+            "## 二、修改清单\n"
+            "| 优先级 | 条款 | 问题 | 修改方向 |\n"
+            "|--------|------|------|----------|\n"
+            "| 🔴 | 第二条 | 自动续期 | 增加30日通知期 |\n\n"
+            "## 三、谈判要点\n"
+            "该条款背后博弈逻辑：对方想锁死期限...\n\n"
+            "result: ok. output: done. why: analysis complete."
+        )
     lines = [
         '## 一、协议逐条分析',
         '',

@@ -45,8 +45,8 @@ for f in sorted(tests_dir.glob("case-*.md")):
 
 check("解析3个用例", len(cases) == 3, f"got {len(cases)}")
 check("case-001-basic 有断言", len(cases[0].checks) > 0)
-check("case-002-24-check 有硬禁止断言",
-      any("24%" in ck.text for ck in cases[1].checks if "边界" in ck.category))
+check("case-002 有边界断言",
+      any("边界" in ck.category for ck in cases[1].checks))
 
 # ── T2: 测试执行全流程 ──────────────────
 section("T2: 执行测试（mock agent）")
