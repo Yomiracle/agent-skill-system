@@ -376,6 +376,25 @@ class SkillRefiner:
                     root_cause=", ".join(set(categories)),
                     fix=", ".join(actions[:3]),
                 )
+
+                # ── 写 changelog ──
+                from datetime import datetime as dt
+                changelog_path = skill_dir / "CHANGELOG.md"
+                changelog_entry = (
+                    f"### {dt.now(timezone.utc).strftime('%Y-%m-%dT%H:%M:%SZ')} — "
+                    f"精炼迭代 #{iteration}\n"
+                    f"- 测试通过率: {last_result.passed}/{last_result.total}\n"
+                    f"- 失败断言: {last_result.failed} 条\n"
+                    f"- 诊断类别: {', '.join(set(categories))}\n"
+                    f"- 修正动作: {'; '.join(actions[:5])}\n\n"
+                )
+                if changelog_path.exists():
+                    existing = changelog_path.read_text(encoding="utf-8")
+                    changelog_path.write_text(changelog_entry + existing, encoding="utf-8")
+                else:
+                    changelog_path.write_text(
+                        f"# 精炼记录：{skill_name}\n\n{changelog_entry}", encoding="utf-8"
+                    )
             else:
                 # 通过率够高但不全过，不做破坏性修改
                 return RefinementReport(
