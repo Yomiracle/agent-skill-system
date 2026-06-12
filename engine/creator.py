@@ -51,11 +51,25 @@ class SkillCreator:
     MAX_RETRIES = 2
 
     def __init__(self, bank_dir: str,
-                 distillation_fn: Callable):  # Callable[[CreationTask], dict]
+                 distillation_fn: Callable = None):  # Callable[[CreationTask], dict]
         self.bank_dir = Path(bank_dir)
         self.bank = SkillBank(str(bank_dir))
         self.runner = TestRunner(str(bank_dir))
-        self.distill = distillation_fn
+        self.distill = distillation_fn or self._builtin_distill
+
+    def _builtin_distill(self, task: CreationTask) -> dict:
+        """内置蒸馏函数 — 通过 llm.py 调用任意LLM自动蒸馏。不需要外部Agent。"""
+        from .llm import llm_call_json
+        from datetime import date
+
+        prompt = CREATION_PROMPT.format(
+            trace=task.trace,
+            success_input=task.success_input,
+            success_output=task.success_output,
+            skill_name=task.skill_name,
+            date=date.today().isoformat(),
+        )
+        return llm_call_json(prompt)
 
     def create(self, task: CreationTask,
                test_output_fn: Optional[Callable] = None) -> CreationResult:

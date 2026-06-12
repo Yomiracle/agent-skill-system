@@ -56,26 +56,49 @@ class RefinementReport:
 # ── 诊断器 ─────────────────────────────────────────────
 
 class FailureDiagnoser:
-    """分析失败的断言，推断根因"""
+    """分析失败的断言，推断根因。优先使用 LLM 语义分析（精细），降级使用正则（快速）。"""
 
     def __init__(self, skill_md: str):
         self.skill_md = skill_md
         self.skill_lower = skill_md.lower()
 
     def diagnose(self, check: CheckItem, agent_output: str) -> FailureDiagnosis:
-        """
-        对单条失败断言做根因诊断。
+        # 先用正则 heuristic（极快），如果置信度不够再试 LLM
+        result = self._diagnose_heuristic(check, agent_output)
+        if result.category != FailureCategory.UNKNOWN:
+            return result
+        # heuristic 搞不定，降级用 LLM（有超时保护）
+        try:
+            return self._diagnose_llm(check, agent_output)
+        except Exception:
+            return result  # 返回 heuristic 结果（即使是 UNKNOWN）
 
-        Heuristics:
-        - 断言要求「禁止X」但输出有 X → SKILL.md 没有禁止 X 的规则 → MISSING_INFO
-        - 断言要求「包含X」但输出无 X → SKILL.md 流程遗漏此步骤 → MISSING_INFO
-        - 输出有 X 但断言说没出现 → 可能是 BAD_MEMORY 引导了错误行为
-        - 反向断言失败（断言说"没有X"但输出却有X） → □可能规则冲突 → WRONG_RULE
-        """
+    def _diagnose_llm(self, check: CheckItem, agent_output: str) -> FailureDiagnosis:
+        from .llm import llm_call_json
+
+        prompt = (
+            f"Analyze a failed skill test assertion and suggest what to fix in SKILL.md.\n\n"
+            f"### Failed assertion\n"
+            f"- Category: {check.category}\n"
+            f"- Text: {check.text}\n\n"
+            f"### Agent output that failed\n"
+            f"{agent_output[:2000]}\n\n"
+            f"### Current SKILL.md\n"
+            f"{self.skill_md[:3000]}\n\n"
+            f"Return JSON: {{'category': 'MISSING_INFO|WRONG_RULE|AMBIGUOUS_FLOW|TEST_TOO_STRICT|BAD_MEMORY', "
+            f"'evidence': 'why it failed', 'suggested_fix': 'what to add/change in SKILL.md'}}"
+        )
+        d = llm_call_json(prompt)
+        return FailureDiagnosis(
+            check=check,
+            category=FailureCategory(d.get("category", "AMBIGUOUS_FLOW")),
+            evidence=d.get("evidence", ""),
+            suggested_fix=d.get("suggested_fix", ""),
+        )
+
+    def _diagnose_heuristic(self, check: CheckItem, agent_output: str) -> FailureDiagnosis:
         text = check.text
         ol = agent_output.lower()
-
-        # 提取断言中要求的关键词
         required_terms = re.findall(r'["\"“”]([^"\"“”]+)["\"“”]', text)
 
         # 情况1：断言要求出现某词但输出没有
