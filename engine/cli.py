@@ -29,6 +29,8 @@ from engine.refiner import SkillRefiner
 
 # ── generic mock output ──
 def generic_mock(skill_name, input_yaml):
+    if "weekly" in skill_name.lower() or "周报" in skill_name:
+        return "📅 本周(6.9-6.15)\n\n## 本周完成\n| 事项 | 进度 | 备注 |\n|------|------|------|\n| 项目启动 | ✅完成 | 提前两天 |\n| 接口开发 | ✅完成 | 已提测 |\n| 代码审查 | ✅完成 | 无阻塞 |\n\n## 下周计划\n- [ ] 上线准备\n\n## 需要协调\n无"
     if "合同" in skill_name or "证据" in skill_name or "__test" in skill_name:
         return mock_agent_output(skill_name, input_yaml)
     if "论文" in skill_name:

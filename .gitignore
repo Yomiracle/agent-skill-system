@@ -4,5 +4,9 @@ __pycache__/
 *~
 .~*
 skills/
-skills/**
+skills/证据目录制作/
+skills/合同审查/
+skills/论文审查/
+skills/Bug诊断与修复/
+skills/__test_skill__/
 05-抖音发布版.md

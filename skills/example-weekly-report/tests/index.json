@@ -1,0 +1,16 @@
+{
+  "test_cases": [
+    {
+      "id": "case-001-has-dates",
+      "file": "case-001-has-dates.md",
+      "description": "输出含日期区间",
+      "expected_result": "pass"
+    },
+    {
+      "id": "case-002-no-judgment",
+      "file": "case-002-no-judgment.md",
+      "description": "不含工作评价",
+      "expected_result": "pass"
+    }
+  ]
+}

@@ -1,0 +1,13 @@
+{
+  "name": "example-weekly-report",
+  "version": "1.0.0",
+  "description": "从碎片工作记录生成结构化周报",
+  "trigger_keywords": [
+    "周报", "写周报", "本周总结", "工作汇报",
+    "weekly report", "week summary"
+  ],
+  "tags": ["示例", "办公", "生产力"],
+  "dependencies": [],
+  "max_context_percent": 20,
+  "created_at": "2026-06-12T00:00:00Z"
+}
