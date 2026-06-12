@@ -3,10 +3,13 @@ __pycache__/
 .DS_Store
 *~
 .~*
-skills/
+
+# 排除本地测试和办案技能，保留示例
 skills/证据目录制作/
 skills/合同审查/
 skills/论文审查/
 skills/Bug诊断与修复/
 skills/__test_skill__/
+
+# 排除推广草稿
 05-抖音发布版.md
