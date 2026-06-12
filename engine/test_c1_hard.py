@@ -129,7 +129,7 @@ fake_entry = SkillEntry(
 bundle = loader.load(fake_entry)
 check("不存在技能返回 None", bundle is None)
 
-entry = bank_real.get("合同审查")
+entry = bank_real.get("__test_skill__")
 check("get 真实技能非空", entry is not None)
 if entry:
     bundle = loader.load(entry)
@@ -238,7 +238,7 @@ shutil.rmtree(tmp)
 # ─────────────────────────────────────────────
 section("T12: Prompt 格式完整性")
 
-entry = bank_real.get("合同审查")
+entry = bank_real.get("__test_skill__")
 if entry:
     bundle = loader.load(entry)
     if bundle:

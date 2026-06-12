@@ -29,7 +29,7 @@ from engine.refiner import SkillRefiner
 
 # ── generic mock output ──
 def generic_mock(skill_name, input_yaml):
-    if "合同" in skill_name:
+    if "合同" in skill_name or "证据" in skill_name or "__test" in skill_name:
         return mock_agent_output(skill_name, input_yaml)
     if "论文" in skill_name:
         return "## 批判分析\n\n### 亮点\n- 创新点\n\n### 漏洞\n- 覆盖率不足\n- 实验规模有限\n\n### 改进建议\n- 需要独立复现"

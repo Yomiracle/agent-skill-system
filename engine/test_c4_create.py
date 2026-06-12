@@ -1,5 +1,5 @@
 """
-C4 验证：从轨迹中蒸馏第二个技能 —— 论文审查
+C4 验证：从轨迹中蒸馏第二个技能 —— __test_skill__
 演示完整闭环：轨迹 → SKILL.md → 测试 → 注册
 """
 
@@ -31,7 +31,7 @@ def distill_fn(task: CreationTask) -> dict:
     模拟蒸馏：从「MUSE 论文分析」对话轨迹中提取技能。
     真实场景：这个函数发 prompt 给 Agent，Agent 返回 JSON。
     """
-    skill_md = """# 论文审查
+    skill_md = """# __test_skill__
 
 ## 目标
 审查AI/技术论文的方法论、实验设计和结论，识别亮点、漏洞、未验证的假设，输出结构化批判分析。
@@ -167,7 +167,7 @@ def distill_fn(task: CreationTask) -> dict:
         ],
     ]
 
-    memory_md = """# 技能记忆：论文审查
+    memory_md = """# 技能记忆：__test_skill__
 
 ## 有效经验
 
@@ -180,7 +180,7 @@ def distill_fn(task: CreationTask) -> dict:
     config = {
         "description": "审查AI/技术论文的方法论、实验设计和结论，输出结构化批判分析",
         "trigger_keywords": [
-            "论文审查", "审论文", "分析论文", "论文分析",
+            "__test_skill__", "审论文", "分析论文", "论文分析",
             "review paper", "paper review", "论文有什么问题",
             "分析这篇文章", "批判分析"
         ],
@@ -196,12 +196,12 @@ def distill_fn(task: CreationTask) -> dict:
 
 
 # ── T1: 创建第二个技能 ──────────────────
-section("T1: Creator 创建论文审查技能")
+section("T1: Creator 创建__test_skill__技能")
 
 creator = SkillCreator(SKILLS_TMP, distillation_fn=distill_fn)
 
 task = CreationTask(
-    skill_name="论文审查",
+    skill_name="__test_skill__",
     trace=(
         "用户发了MUSE论文的详细分析文章，我逐段审查并提出批判。"
         "识别了：单轨迹蒸馏风险、覆盖率瓶颈、实验规模限制、跨Agent迁移验证不足。"
@@ -209,7 +209,7 @@ task = CreationTask(
     ),
     success_input="论文文本: ...[MUSE论文全文]...",
     success_output="结构化批判：亮点X3 + 漏洞X4 + 改进建议X4",
-    trigger_keywords=["论文审查", "审论文", "paper review", "分析论文"],
+    trigger_keywords=["__test_skill__", "审论文", "paper review", "分析论文"],
     tags=["学术", "审查"],
 )
 
@@ -245,7 +245,7 @@ check("测试全部通过", result.tests_passed == result.tests_total)
 # ── T2: 验证文件写入 ──────────────────────
 section("T2: 验证产物完整性")
 
-skill_dir = Path(SKILLS_TMP) / "论文审查"
+skill_dir = Path(SKILLS_TMP) / "__test_skill__"
 check("SKILL.md 存在", (skill_dir / "SKILL.md").exists())
 check(".memory.md 存在", (skill_dir / ".memory.md").exists())
 check("config.json 存在", (skill_dir / "config.json").exists())
@@ -268,12 +268,12 @@ check("技能已注册在线", len(active) >= 1, f"got {len(active)}: {[s.name f
 searcher = SkillSearcher(SKILLS_TMP)
 
 # 论文任务→论文技能
-r = searcher.search("帮我做论文审查", bank.index)
-check("论文任务匹配论文技能", len(r) > 0 and r[0][0].name == "论文审查",
+r = searcher.search("帮我做__test_skill__", bank.index)
+check("论文任务匹配论文技能", len(r) > 0 and r[0][0].name == "__test_skill__",
       f"top: {r[0][0].name if r else 'none'} (score: {r[0][2] if r else 0})")
 
 # 合同任务→合同技能（不应错配）
-# 这里只有论文审查，所以应该无匹配
+# 这里只有__test_skill__，所以应该无匹配
 r2 = searcher.search("帮我审一下这份合同", bank.index)
 check("合同任务不误匹配论文技能", len(r2) == 0 or (
     len(r2) > 0 and r2[0][2] < 20  # 低分不算真命中

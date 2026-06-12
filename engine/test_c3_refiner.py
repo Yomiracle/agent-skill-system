@@ -109,7 +109,7 @@ refiner = SkillRefiner(SKILLS_DIR)
 def good_output(skill_name: str, input_yaml: str) -> str:
     return mock_agent_output(skill_name, input_yaml)
 
-health = refiner.quick_check("合同审查", good_output)
+health = refiner.quick_check("__test_skill__", good_output)
 print(f"  技能健康状态: {health['passed']}/{health['total']} 通过")
 check("quick_check 返回结构完整", "pass_rate" in health)
 
@@ -118,7 +118,7 @@ section("T4: 精炼闭环模拟")
 
 # 用临时目录，避免污染真实文件
 tmp = tempfile.mkdtemp(prefix="c3_refine_")
-skill_tmp2 = f"{tmp}/合同审查"
+skill_tmp2 = f"{tmp}/__test_skill__"
 os.makedirs(f"{skill_tmp2}/tests", exist_ok=True)
 
 # 复制 SKILL.md
@@ -159,11 +159,11 @@ def broken_output(skill_name: str, input_yaml: str) -> str:
 
 refiner2 = SkillRefiner(tmp)
 
-result_before = refiner2.runner.evaluate("合同审查", broken_output)
+result_before = refiner2.runner.evaluate("__test_skill__", broken_output)
 print(f"  精炼前: {result_before.passed}/{result_before.total} 通过")
 
 # 跑精炼
-report = refiner2.refine("合同审查", broken_output)
+report = refiner2.refine("__test_skill__", broken_output)
 print(f"  精炼迭代: {report.iteration}")
 print(f"  修正动作: {len(report.actions_taken)}")
 for a in report.actions_taken:

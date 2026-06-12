@@ -31,7 +31,7 @@ def section(title):
 # ── T1: 测试文件解析 ──────────────────────
 section("T1: 测试用例文件解析")
 
-tests_dir = Path(SKILLS_DIR) / "合同审查" / "tests"
+tests_dir = Path(SKILLS_DIR) / "__test_skill__" / "tests"
 cases = []
 
 for f in sorted(tests_dir.glob("case-*.md")):
@@ -55,7 +55,7 @@ runner = TestRunner(SKILLS_DIR)
 # rename mock_agent_output to output_fn to avoid name collision
 output_fn = mock_agent_output
 
-result = runner.evaluate("合同审查", output_fn)
+result = runner.evaluate("__test_skill__", output_fn)
 
 print(f"\n  技能: {result.skill_name}")
 print(f"  总计: {result.total}")
@@ -118,9 +118,9 @@ section("T4: 评估结果回写 SkillBank")
 
 bank = SkillBank(SKILLS_DIR)
 bank.load_index()
-bank.update_evaluation("合同审查", passed=True, test_count=3, passed_count=3)
+bank.update_evaluation("__test_skill__", passed=True, test_count=3, passed_count=3)
 
-entry = bank.get("合同审查")
+entry = bank.get("__test_skill__")
 check("评估结果已写入", entry.last_evaluation is not None and entry.last_evaluation.passed)
 
 # ── 总结 ──────────────────────────────────
