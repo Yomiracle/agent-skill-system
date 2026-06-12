@@ -118,6 +118,19 @@ cp -r skills/[技能名]/ target-agent/skills/
 
 ## 运行时架构
 
+```mermaid
+flowchart TD
+    U["👤 用户说'帮我做X'"] --> S["🔍 searcher.py\n关键词+语义匹配"]
+    S --> L["📦 loader.py\n打包 SKILL.md + .memory.md"]
+    L --> A["🤖 Agent\n按技能规范执行任务"]
+    A --> M["🧠 memory.py\n自动追加经验到 .memory.md"]
+    M --> T["✅ test_runner.py\n8种断言验证"]
+    T -->|失败| R["🔧 refiner.py\n诊断→修正→回炉"]
+    R --> T
+    T -->|全部通过| B["🏦 bank.py\n注册到技能库"]
+    B -->|下次任务| S
+```
+
 ```
 用户说"帮我做 [某个任务]"
     ↓ 关键词 + 语义检索
@@ -190,6 +203,19 @@ agent-skill-system/
 | 训练需求 | 无 | 无 | 无（training-free） |
 
 ---
+
+## 与其他方案的区别
+
+| | Prompt 工程 | RAG 知识库 | Cursor Rules | **Agent Skill System** |
+|---|---:|---:|---:|---:|
+| 从经验创建 | ❌ 人手动写 | ❌ | ❌ 手动 | ✅ creator.py 轨迹蒸馏 |
+| 独立记忆 | ❌ | ❌ | ❌ | ✅ .memory.md 每次累积 |
+| 自动测试 | ❌ | ❌ | ❌ | ✅ 8 种断言引擎 |
+| 失败自修正 | ❌ | ❌ | ❌ | ✅ refiner.py 诊断→回炉 |
+| 跨 Agent 移植 | 手动复制 | 绑向量库 | 绑编辑器 | ✅ cp 目录即可 |
+| 零训练需求 | ✅ | ✅ | ✅ | ✅ |
+| 行业无关 | ✅ | ✅ | ✅ | ✅ |
+
 
 ## License
 
