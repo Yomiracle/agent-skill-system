@@ -35,7 +35,7 @@ def section(title):
 # ── T1: 诊断器单元测试 ──────────────────
 section("T1: FailureDiagnoser 诊断准确性")
 
-skill_md = Path(SKILLS_DIR + "/合同审查/SKILL.md").read_text(encoding="utf-8")
+skill_md = Path(SKILLS_DIR + "/__test_skill__/SKILL.md").read_text(encoding="utf-8")
 d = FailureDiagnoser(skill_md)
 
 # 1.1 输出出现禁止词 → MISSING_INFO
@@ -75,7 +75,7 @@ skill_tmp = f"{tmp}/test_skill"
 os.makedirs(skill_tmp, exist_ok=True)
 
 # 复制 SKILL.md
-src_skill = Path(SKILLS_DIR + "/合同审查/SKILL.md").read_text(encoding="utf-8")
+src_skill = Path(SKILLS_DIR + "/__test_skill__/SKILL.md").read_text(encoding="utf-8")
 Path(f"{skill_tmp}/SKILL.md").write_text(src_skill, encoding="utf-8")
 
 applier = FixApplier(skill_tmp)
