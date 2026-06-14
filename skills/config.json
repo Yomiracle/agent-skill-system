@@ -1,1 +1,27 @@
-{"version":"1.0","skills":[{"name":"example-weekly-report","path":"example-weekly-report","status":"active","version":"1.0.0","created_at":"2026-06-12T15:09:08Z","updated_at":"2026-06-12T15:09:08Z","last_used_at":"2026-06-12T15:09:08Z","use_count":0,"success_rate":1.0}]}
+{
+  "version": "1.0",
+  "skills": [
+    {
+      "name": "example-weekly-report",
+      "path": "example-weekly-report",
+      "status": "active",
+      "version": "1.0.0",
+      "created_at": "2026-06-12T15:09:08Z",
+      "updated_at": "2026-06-12T15:09:08Z",
+      "last_used_at": "2026-06-12T15:09:08Z",
+      "use_count": 0,
+      "success_rate": 1.0
+    },
+    {
+      "name": "document-page-indexer",
+      "path": "document-page-indexer",
+      "status": "active",
+      "version": "1.0.0",
+      "created_at": "2026-06-12T15:30:00Z",
+      "updated_at": "2026-06-12T15:30:00Z",
+      "last_used_at": "2026-06-12T15:30:00Z",
+      "use_count": 1,
+      "success_rate": 1.0
+    }
+  ]
+}

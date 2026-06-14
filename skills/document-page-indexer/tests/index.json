@@ -1,0 +1,16 @@
+{
+  "test_cases": [
+    {
+      "id": "case-001-no-regex-classification",
+      "file": "case-001-no-regex-classification.md",
+      "description": "禁止使用正则做页面分类",
+      "expected_result": "pass"
+    },
+    {
+      "id": "case-002-grouped-output",
+      "file": "case-002-grouped-output.md",
+      "description": "输出按类型分组+统计",
+      "expected_result": "pass"
+    }
+  ]
+}

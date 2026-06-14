@@ -1,0 +1,13 @@
+{
+  "name": "document-page-indexer",
+  "version": "1.0.0",
+  "description": "多页扫描PDF逐页OCR+分类+摘要，生成可检索页面索引表",
+  "trigger_keywords": [
+    "页面索引","卷宗索引","做索引","document index",
+    "page index","扫描件","OCR","索引表"
+  ],
+  "tags": ["文档处理","OCR","法律","索引"],
+  "dependencies": [],
+  "max_context_percent": 25,
+  "created_at": "2026-06-12T00:00:00Z"
+}
