@@ -198,6 +198,15 @@ def main():
     elif cmd == "stats":
         if not args: print("usage: stats <skill_name>", file=sys.stderr); sys.exit(1)
         cmd_stats(bank, args[0], record=("-r" in args))
+    elif cmd == "register":
+        if not args: print("usage: register <skill_name>", file=sys.stderr); sys.exit(1)
+        entry = bank.register(args[0], args[0])
+        print(f"registered: {entry.name} (v{entry.version})")
+    elif cmd == "scan":
+        before = len(bank.index.skills)
+        bank.scan_directory()
+        after = len(bank.index.skills)
+        print(f"scan: {after - before} new skills registered (total: {after})")
     else:
         print(f"unknown command: {cmd}", file=sys.stderr)
         print(__doc__); sys.exit(1)
