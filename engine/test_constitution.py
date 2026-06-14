@@ -1,4 +1,4 @@
-import sys, re, os as _os
+import sys, re
 from pathlib import Path
 
 SKILLS_DIR = str(Path(__file__).parent.parent / "skills")
@@ -10,17 +10,6 @@ def check(name, condition, detail=""):
     else: FAIL += 1; print(f"  ❌ {name}  {detail}")
 
 def section(title): print(f"\n{'='*50}\n  {title}\n{'='*50}")
-
-_fd = f"{SKILLS_DIR}/__test_skill__"; _td = f"{_fd}/tests"
-_os.makedirs(_td, exist_ok=True)
-for f, c in [
-    ("SKILL.md", "# __test_skill__\n## 目标\nTest\n## 流程\n1. Do\n2. Check"),
-    (".memory.md", "# 记忆\n## 有效经验\n### 2026-01-01 [成功] x\n- 场景：x\n- 做法：x\n- 要点：x"),
-    ("config.json", '{"name":"__test_skill__","version":"1.0.0","description":"Test","trigger_keywords":["test"],"tags":["test"],"dependencies":[],"max_context_percent":30,"created_at":"2026-01-01T00:00:00Z","last_used_at":"2026-01-01T00:00:00Z"}'),
-    (f"{_td}/index.json", '{"test_cases":[]}'),
-]:
-    _os.makedirs(_os.path.dirname(f"{_fd}/{f}"), exist_ok=True)
-    open(f"{_fd}/{f}", "w").write(c)
 
 section("C1: .memory.md 根因不能是粗心等")
 for sp in Path(SKILLS_DIR).iterdir():

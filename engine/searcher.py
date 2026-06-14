@@ -6,6 +6,7 @@ from pathlib import Path
 from typing import Optional
 
 from .models import SkillConfig, SkillEntry, SkillBankIndex
+from .io_utils import safe_child
 
 
 class SkillSearcher:
@@ -55,7 +56,11 @@ class SkillSearcher:
         return deduped
 
     def _load_config(self, entry: SkillEntry) -> Optional[SkillConfig]:
-        cfg_path = self.bank_dir / entry.path / "config.json"
+        try:
+            skill_dir = safe_child(self.bank_dir, entry.path, "skill path")
+        except ValueError:
+            return None
+        cfg_path = skill_dir / "config.json"
         if not cfg_path.exists():
             return None
         try:

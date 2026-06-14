@@ -2,9 +2,9 @@
 
 from pathlib import Path
 from datetime import date
-from typing import Optional
 
 from .models import MemoryEntry, MemoryType
+from .io_utils import atomic_write_text
 
 
 class MemoryManager:
@@ -84,4 +84,4 @@ class MemoryManager:
             tail = lines[-3:]
             updated = "\n".join(head + [f"// 该文件超过 {self.MAX_LINES} 行，已自动截断"] + body + tail)
 
-        self.memory_path.write_text(updated.strip() + "\n", encoding="utf-8")
+        atomic_write_text(self.memory_path, updated.strip() + "\n")

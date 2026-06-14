@@ -76,6 +76,24 @@ python3 engine/cli.py register "技能名"
 python3 engine/cli.py scan
 ```
 
+> 创建技能只有在传入真实的 Agent 测试执行器并通过全部测试后才会注册。
+> 未验证的蒸馏结果会保留为草稿，避免用同一份成功样例“自证通过”。
+
+### LLM 后端
+
+可通过 OpenAI 兼容 API 或本地命令接入模型：
+
+```bash
+export OPENAI_API_KEY="..."
+export OPENAI_BASE_URL="https://api.example.com/v1"
+export LLM_MODEL="your-model"
+
+# 或使用本地命令。命令不经过 shell；未写 {prompt} 时，prompt 从 stdin 输入。
+export LLM_COMMAND='your-llm-cli --json'
+```
+
+出于安全原因，`LLM_COMMAND` 不支持管道、重定向、`;`、`&&` 等 shell 语法。
+
 ---
 
 ## 技能目录结构

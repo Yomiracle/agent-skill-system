@@ -1,5 +1,18 @@
 # Changelog
 
+## Unreleased
+
+### Security
+- Reject skill and test paths containing traversal or nested path components.
+- Execute `LLM_COMMAND` without a shell to prevent command injection.
+- Write indexes, memories, generated skills, and refinement logs atomically.
+
+### Correctness
+- Unknown assertions and test cases without assertions now fail closed.
+- Skill creation requires a real Agent test executor before registration.
+- Refinement now distinguishes required-output rules from forbidden-output rules.
+- End-to-end and security tests use temporary skill banks and do not modify repository data.
+
 ## v1.0.0 (2026-06-12)
 
 ### 引擎

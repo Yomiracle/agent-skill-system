@@ -3,8 +3,11 @@ LLM调用适配层 — 引擎内部需要做语义理解时调用。
 不绑定任何特定模型，通过环境变量配置。
 """
 
-import os, json, subprocess, sys
-from pathlib import Path
+import json
+import os
+import shlex
+import subprocess
+import sys
 
 def llm_call(prompt: str, system: str = "You are a skill distillation engine. Respond with valid JSON only.") -> str:
     """
@@ -18,17 +21,30 @@ def llm_call(prompt: str, system: str = "You are a skill distillation engine. Re
 
     # 检查是否有任何 backend 可用
     has_llm = os.environ.get("LLM_COMMAND") or os.environ.get("OPENAI_API_KEY")
-    if not has_llm and not _cli_available():
+    if not has_llm:
         raise RuntimeError("no LLM backend — set LLM_COMMAND or OPENAI_API_KEY")
 
     # 方案1：自定义命令
     cmd_template = os.environ.get("LLM_COMMAND")
     if cmd_template:
-        escaped = prompt.replace("'", "'\\''")
-        cmd = cmd_template.replace("{prompt}", escaped)
-        result = subprocess.run(cmd, shell=True, capture_output=True, text=True, timeout=timeout)
+        args = shlex.split(cmd_template)
+        if not args:
+            raise RuntimeError("LLM_COMMAND is empty")
+        has_placeholder = any("{prompt}" in arg for arg in args)
+        if has_placeholder:
+            args = [arg.replace("{prompt}", prompt) for arg in args]
+        result = subprocess.run(
+            args,
+            input=None if has_placeholder else prompt,
+            shell=False,
+            capture_output=True,
+            text=True,
+            timeout=timeout,
+        )
         if result.returncode == 0 and result.stdout.strip():
             return result.stdout.strip()
+        if result.stderr:
+            sys.stderr.write(f"[llm.py] command failed: {result.stderr[:500]}\n")
 
     # 方案2：OpenAI 兼容 API
     api_key = os.environ.get("OPENAI_API_KEY")
@@ -63,15 +79,6 @@ def llm_call(prompt: str, system: str = "You are a skill distillation engine. Re
         "llm_call failed: No LLM backend responded.\n"
         "Set: export LLM_COMMAND='...' or export OPENAI_API_KEY=sk-..."
     )
-
-
-def _cli_available() -> bool:
-    try:
-        subprocess.run(["which", "claude"], capture_output=True, timeout=2)
-        return True
-    except Exception:
-        return False
-
 
 def llm_call_json(prompt: str, system: str = "") -> dict:
     """调用LLM并解析JSON响应"""

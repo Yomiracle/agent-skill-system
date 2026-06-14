@@ -18,6 +18,7 @@ from datetime import datetime, timezone
 
 from .test_runner import TestRunner, TestCase, CheckItem, TestResult
 from .memory import MemoryManager
+from .io_utils import atomic_write_text, safe_child
 
 
 # ── 数据结构 ──────────────────────────────────────────
@@ -232,35 +233,39 @@ class FixApplier:
         return actions
 
     def _append_rule(self, d: FailureDiagnosis) -> str:
-        """向 SKILL.md 规则清单追加一条禁止/必须规则"""
+        """向 SKILL.md 规则清单追加与断言方向一致的规则。"""
         check_text = d.check.text
-        # 提取关键词
         keywords = re.findall(r'["\"“”]([^"\"“”]+)["\"“”]', check_text)
         keyword = keywords[0] if keywords else "相关概念"
-
         skill = self.skill_path.read_text(encoding="utf-8")
+        negative = bool(re.search(
+            r'(?:没有出现|未出现|未使用|不含|出现次数\s*(?:≤|=)\s*0)',
+            check_text,
+        ))
+        if negative:
+            new_rule = f"- 【禁止】输出中不得出现「{keyword}」"
+            action = f"SKILL.md: 追加禁止规则 [{keyword}]"
+        else:
+            new_rule = f"- 【必须】输出中应包含「{keyword}」并说明其与结论的关系"
+            action = f"SKILL.md: 追加必需规则 [{keyword}]"
 
-        # 找到规则清单区域插入
-        if '## 规则清单' in skill:
-            # 在第一个 ### 小节后插入
-            insert_marker = '\n### 引用来源规范'
-            if insert_marker in skill:
-                new_rule = f'\n- 【禁止】不得在审查输出中使用「{keyword}」作为判断依据或标准\n'
-                skill = skill.replace(insert_marker, new_rule + insert_marker)
-            else:
-                # 追加到规则清单末尾
-                new_rule = f'\n- 【禁止】审查输出中不得出现「{keyword}」\n'
-                skill = skill.rstrip() + new_rule
-
-        self.skill_path.write_text(skill, encoding="utf-8")
-        return f"SKILL.md: 追加禁止规则 [{keyword}]"
+        if new_rule in skill:
+            return ""
+        updated = self._append_to_section(skill, new_rule, ("## 规则清单", "## 硬规则"))
+        if updated == skill:
+            return ""
+        self.skill_path.write_text(updated, encoding="utf-8")
+        return action
 
     def _correct_rule(self, d: FailureDiagnosis) -> str:
-        """修正一条冲突规则"""
-        # 在疑似冲突的规则行前加注释标记
-        keyword = d.evidence
+        """记录冲突规则供人工确认，不伪装成已完成语义修改。"""
         skill = self.skill_path.read_text(encoding="utf-8")
-        return f"SKILL.md: 标记待修正规则 [{keyword[:40]}]"
+        note = f"- 待人工确认：{d.suggested_fix}（证据：{d.evidence}）"
+        if note in skill:
+            return ""
+        updated = self._append_to_section(skill, note, ("## 自动精炼建议",))
+        self.skill_path.write_text(updated, encoding="utf-8")
+        return f"SKILL.md: 记录冲突规则建议 [{d.check.text[:40]}]"
 
     def _correct_memory(self, d: FailureDiagnosis) -> str:
         """向 .memory.md 追加修正记录"""
@@ -276,21 +281,37 @@ class FixApplier:
         """在流程步骤中添加更明确的检查点"""
         skill = self.skill_path.read_text(encoding="utf-8")
         keywords = re.findall(r'["\"“”]([^"\"“”]+)["\"“”]', d.check.text)
-
-        if '## 流程' in skill:
-            checkpoint_line = f'- 检查点：输出必须包含「{keywords[0]}」\n' if keywords else ""
-            # 插入到最后一个检查点之后
-            last_check = skill.rfind('- 检查点：')
-            if last_check > 0 and checkpoint_line:
-                insert_at = skill.find('\n', last_check) + 1
-                skill = skill[:insert_at] + checkpoint_line + skill[insert_at:]
-                self.skill_path.write_text(skill, encoding="utf-8")
-
+        checkpoint = (
+            f"- 检查点：输出必须包含「{keywords[0]}」并解释其作用"
+            if keywords else f"- 检查点：{d.suggested_fix}"
+        )
+        if checkpoint in skill:
+            return ""
+        updated = self._append_to_section(skill, checkpoint, ("## 流程",))
+        if updated == skill:
+            return ""
+        self.skill_path.write_text(updated, encoding="utf-8")
         return f"SKILL.md: 强化流程检查点 [{d.check.text[:40]}]"
 
     def _relax_test(self, d: FailureDiagnosis) -> str:
         """建议放宽测试断言（仅记录，不自动改测试文件）"""
         return f"建议放宽测试: {d.check.text[:60]}"
+
+    @staticmethod
+    def _append_to_section(skill: str, line: str, headings: tuple[str, ...]) -> str:
+        """Append a line inside the first matching section, or create one."""
+        for heading in headings:
+            start = skill.find(heading)
+            if start < 0:
+                continue
+            next_section = skill.find("\n## ", start + len(heading))
+            insert_at = len(skill) if next_section < 0 else next_section
+            prefix = skill[:insert_at].rstrip()
+            suffix = skill[insert_at:]
+            return f"{prefix}\n{line}\n{suffix.lstrip()}"
+
+        heading = headings[0]
+        return f"{skill.rstrip()}\n\n{heading}\n{line}\n"
 
 
 # ── 精炼引擎 ───────────────────────────────────────────
@@ -319,7 +340,18 @@ class SkillRefiner:
           4. 回到步骤 1
           5. 直到通过或达迭代上限
         """
-        skill_dir = self.bank_dir / skill_name
+        try:
+            skill_dir = safe_child(self.bank_dir, skill_name, "skill name")
+        except ValueError:
+            return RefinementReport(
+                skill_name=skill_name,
+                iteration=0,
+                failures_before=0,
+                failures_after=0,
+                diagnoses=[],
+                actions_taken=["技能名无效"],
+                success=False,
+            )
         skill_md_path = skill_dir / "SKILL.md"
 
         all_actions = []
@@ -390,10 +422,11 @@ class SkillRefiner:
                 )
                 if changelog_path.exists():
                     existing = changelog_path.read_text(encoding="utf-8")
-                    changelog_path.write_text(changelog_entry + existing, encoding="utf-8")
+                    atomic_write_text(changelog_path, changelog_entry + existing)
                 else:
-                    changelog_path.write_text(
-                        f"# 精炼记录：{skill_name}\n\n{changelog_entry}", encoding="utf-8"
+                    atomic_write_text(
+                        changelog_path,
+                        f"# 精炼记录：{skill_name}\n\n{changelog_entry}",
                     )
             else:
                 # 通过率够高但不全过，不做破坏性修改
@@ -425,7 +458,18 @@ class SkillRefiner:
         用于查看技能当前健康状态。
         """
         result = self.runner.evaluate(skill_name, agent_output_fn)
-        skill_md_path = self.bank_dir / skill_name / "SKILL.md"
+        try:
+            skill_dir = safe_child(self.bank_dir, skill_name, "skill name")
+        except ValueError:
+            return {
+                "skill_name": skill_name,
+                "pass_rate": 0.0,
+                "passed": 0,
+                "failed": 0,
+                "total": 0,
+                "diagnoses": [],
+            }
+        skill_md_path = skill_dir / "SKILL.md"
         skill_md = skill_md_path.read_text(encoding="utf-8") if skill_md_path.exists() else ""
         self.diagnoser = FailureDiagnoser(skill_md)
 

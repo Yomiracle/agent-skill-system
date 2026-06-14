@@ -5,6 +5,7 @@ from pathlib import Path
 from typing import Optional
 
 from .models import SkillConfig, SkillBundle, SkillEntry
+from .io_utils import safe_child
 
 
 class SkillLoader:
@@ -15,7 +16,10 @@ class SkillLoader:
 
     def load(self, entry: SkillEntry) -> Optional[SkillBundle]:
         """加载一个技能的完整内容"""
-        skill_dir = self.bank_dir / entry.path
+        try:
+            skill_dir = safe_child(self.bank_dir, entry.path, "skill path")
+        except ValueError:
+            return None
         if not skill_dir.is_dir():
             return None
 

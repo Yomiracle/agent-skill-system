@@ -9,6 +9,7 @@ import re
 from pathlib import Path
 from dataclasses import dataclass, field
 from typing import Callable, Optional
+from .io_utils import safe_child, validate_path_component
 
 
 @dataclass
@@ -82,14 +83,46 @@ class TestRunner:
         self.bank_dir = Path(bank_dir)
 
     def load_tests(self, skill_name: str) -> list[TestCase]:
-        tests_dir = self.bank_dir / skill_name / "tests"
+        try:
+            skill_dir = safe_child(self.bank_dir, skill_name, "skill name")
+        except ValueError:
+            return []
+        tests_dir = skill_dir / "tests"
         index_path = tests_dir / "index.json"
         if not index_path.exists():
             return []
-        index = json.loads(index_path.read_text(encoding="utf-8"))
+        try:
+            index = json.loads(index_path.read_text(encoding="utf-8"))
+        except (json.JSONDecodeError, OSError):
+            return [TestCase(
+                id="index",
+                file="index.json",
+                description="invalid test index",
+                status="error",
+            )]
         cases = []
         for tc_info in index.get("test_cases", []):
-            case_file = tests_dir / tc_info["file"]
+            if not isinstance(tc_info, dict):
+                cases.append(TestCase(
+                    id="unknown",
+                    file="",
+                    description="invalid test case metadata",
+                    status="error",
+                ))
+                continue
+            case_name = tc_info.get("file", "")
+            try:
+                validate_path_component(case_name, "test filename")
+                case_file = safe_child(tests_dir, case_name, "test filename")
+            except ValueError:
+                tc = TestCase(
+                    id=tc_info.get("id", "unknown"),
+                    file=str(case_name),
+                    description=tc_info.get("description", ""),
+                    status="error",
+                )
+                cases.append(tc)
+                continue
             if not case_file.exists():
                 tc = TestCase(id=tc_info.get("id", "unknown"), file=tc_info["file"],
                               description=tc_info.get("description", ""))
@@ -111,8 +144,8 @@ class TestRunner:
                 failed += 1
                 continue
             if not tc.checks:
-                tc.status = "pass"
-                passed += 1
+                tc.status = "error"
+                failed += 1
                 continue
             try:
                 agent_output = agent_output_fn(skill_name, tc.input_yaml)
@@ -210,7 +243,7 @@ class TestRunner:
                 hits = sum(1 for w in cn_short if w in ol)
                 return hits / len(cn_short) >= 0.4  # 至少40%短词命中
 
-        return True
+        return False
 
 
 def mock_agent_output(skill_name: str, input_yaml: str) -> str:

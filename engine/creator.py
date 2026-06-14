@@ -6,16 +6,14 @@ C4: SkillCreator — 技能自动创建引擎
 """
 
 import json
-import os
 from pathlib import Path
 from dataclasses import dataclass, field
 from typing import Optional, Callable
 from datetime import datetime, timezone
-import re
 
-from .models import SkillConfig
 from .test_runner import TestRunner
 from .bank import SkillBank
+from .io_utils import atomic_write_json, atomic_write_text, safe_child, validate_path_component
 
 
 @dataclass
@@ -81,7 +79,17 @@ class SkillCreator:
                             用于测试执行。不传则用 task.success_output 作为 mock。
         """
         report = []
-        skill_dir = self.bank_dir / task.skill_name
+        try:
+            skill_dir = safe_child(self.bank_dir, task.skill_name, "skill name")
+        except ValueError as exc:
+            return CreationResult(
+                skill_name=task.skill_name,
+                skill_dir="",
+                tests_passed=0,
+                tests_total=0,
+                registered=False,
+                report=[f"技能名无效: {exc}"],
+            )
 
         for attempt in range(1, self.MAX_RETRIES + 2):
             report.append(f"--- 创建迭代 #{attempt} ---")
@@ -117,10 +125,16 @@ class SkillCreator:
 
             # 3. 跑 C2 测试
             if test_output_fn is None:
-                def test_fn(skill_name: str, test_input: str) -> str:
-                    return task.success_output
-            else:
-                test_fn = test_output_fn
+                report.append("未提供真实 Agent 测试执行器，产物保留为未注册草稿")
+                return CreationResult(
+                    skill_name=task.skill_name,
+                    skill_dir=str(skill_dir),
+                    tests_passed=0,
+                    tests_total=len(tests),
+                    registered=False,
+                    report=report,
+                )
+            test_fn = test_output_fn
 
             result = self.runner.evaluate(task.skill_name, test_fn)
             report.append(f"测试结果: {result.passed}/{result.total} 通过")
@@ -176,10 +190,10 @@ class SkillCreator:
         tests_dir.mkdir(exist_ok=True)
 
         # SKILL.md
-        (skill_dir / "SKILL.md").write_text(skill_md.strip() + "\n", encoding="utf-8")
+        atomic_write_text(skill_dir / "SKILL.md", skill_md.strip() + "\n")
 
         # .memory.md
-        (skill_dir / ".memory.md").write_text(memory_md.strip() + "\n", encoding="utf-8")
+        atomic_write_text(skill_dir / ".memory.md", memory_md.strip() + "\n")
 
         # config.json
         default_config = {
@@ -192,15 +206,17 @@ class SkillCreator:
             "max_context_percent": 30,
             "created_at": datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ"),
         }
-        (skill_dir / "config.json").write_text(
-            json.dumps(default_config, ensure_ascii=False, indent=2), encoding="utf-8"
-        )
+        atomic_write_json(skill_dir / "config.json", default_config)
 
         # tests/
+        for old_case in tests_dir.glob("case-*.md"):
+            old_case.unlink()
         test_index = {"test_cases": []}
         for i, (fname, content) in enumerate(tests):
+            validate_path_component(fname, "test description")
             test_file = f"case-{i+1:03d}-{fname}.md"
-            (tests_dir / test_file).write_text(content.strip() + "\n", encoding="utf-8")
+            validate_path_component(test_file, "test filename")
+            atomic_write_text(tests_dir / test_file, content.strip() + "\n")
             test_index["test_cases"].append({
                 "id": f"case-{i+1:03d}-{fname}",
                 "file": test_file,
@@ -208,9 +224,7 @@ class SkillCreator:
                 "expected_result": "pass",
             })
 
-        (tests_dir / "index.json").write_text(
-            json.dumps(test_index, ensure_ascii=False, indent=2), encoding="utf-8"
-        )
+        atomic_write_json(tests_dir / "index.json", test_index)
 
 
 # ── 内置蒸馏模板 ───────────────────────────────────────

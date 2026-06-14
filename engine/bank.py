@@ -1,12 +1,12 @@
 """SkillBank — 技能索引管理：扫描、注册、更新、废弃"""
 
 import json
-import os
 from pathlib import Path
 from datetime import datetime, timezone
 from typing import Optional
 
 from .models import SkillBankIndex, SkillEntry, SkillStatus, LastEvaluation
+from .io_utils import atomic_write_json, safe_child, validate_path_component
 
 
 class SkillBank:
@@ -34,11 +34,7 @@ class SkillBank:
 
     def save_index(self):
         """将内存中的索引写回 skills/config.json"""
-        self.index_path.parent.mkdir(parents=True, exist_ok=True)
-        self.index_path.write_text(
-            json.dumps(self._index.to_dict(), ensure_ascii=False, indent=2),
-            encoding="utf-8",
-        )
+        atomic_write_json(self.index_path, self._index.to_dict())
 
     @property
     def index(self) -> SkillBankIndex:
@@ -53,6 +49,10 @@ class SkillBank:
 
         如果 name 已存在，覆盖旧记录（用于 skill_update 后的重新注册）。
         """
+        validate_path_component(path, "skill path")
+        if not isinstance(name, str) or not name.strip():
+            raise ValueError("skill name must be a non-empty string")
+        safe_child(self.bank_dir, path, "skill path")
         now = _now_iso()
         entry = SkillEntry(
             name=name,
@@ -132,6 +132,9 @@ class SkillBank:
         idx = self.index
         known_paths = {s.path for s in idx.skills}
 
+        if not self.bank_dir.exists():
+            return
+
         for d in self.bank_dir.iterdir():
             if not d.is_dir():
                 continue
@@ -140,8 +143,11 @@ class SkillBank:
                 continue
             rel_path = d.name
             if rel_path not in known_paths:
-                raw = json.loads(skill_config.read_text(encoding="utf-8"))
-                self.register(raw.get("name", rel_path), rel_path)
+                try:
+                    raw = json.loads(skill_config.read_text(encoding="utf-8"))
+                    self.register(raw.get("name", rel_path), rel_path)
+                except (json.JSONDecodeError, OSError, TypeError, ValueError):
+                    continue
 
 
 def _now_iso() -> str:

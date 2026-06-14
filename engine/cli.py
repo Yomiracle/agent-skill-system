@@ -25,6 +25,7 @@ from engine.loader import SkillLoader
 from engine.memory import MemoryManager
 from engine.test_runner import TestRunner, mock_agent_output
 from engine.refiner import SkillRefiner
+from engine.io_utils import safe_child
 
 
 # ── generic mock output ──
@@ -93,7 +94,12 @@ def cmd_memory(bank, args):
     entry = bank.get(skill_name)
     if not entry:
         print(f"skill not found: {skill_name}", file=sys.stderr); return 1
-    mem = MemoryManager(SKILLS_DIR + "/" + entry.path)
+    try:
+        skill_dir = safe_child(Path(SKILLS_DIR), entry.path, "skill path")
+    except ValueError as exc:
+        print(f"invalid skill path: {exc}", file=sys.stderr)
+        return 1
+    mem = MemoryManager(str(skill_dir))
 
     if mtype == "success":
         if len(args) < 6:
