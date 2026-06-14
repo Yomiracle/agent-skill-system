@@ -68,6 +68,12 @@ python3 engine/cli.py memory "技能名" success \
 
 # 查看技能统计
 python3 engine/cli.py stats "技能名" -r
+
+# 注册新技能 — 外部系统/脚本可程序化注册
+python3 engine/cli.py register "技能名"
+
+# 自动扫描 — 放入新技能目录后一键注册
+python3 engine/cli.py scan
 ```
 
 ---
@@ -110,7 +116,7 @@ skills/[你的技能名]/
 | `test_runner.py` | 8 种断言引擎：词频统计 / 禁止出现 / 以下之一命中 / 不含 / 出现了 / 被标记为 / 反向检查 / 解释了为什么 | C2: 14/14 |
 | `refiner.py` | 失败自动诊断 → 根因分析 → 修正 SKILL.md → 回炉 → 最多 3 轮 | C3: 13/13 |
 | `creator.py` | 对话轨迹 → 蒸馏 SKILL.md + 测试 → C2 验证 → 注册 | C4: ✅ |
-| `cli.py` | 命令行壳：7 条命令覆盖全部操作 | ✅ |
+| `cli.py` | 命令行壳：9 条命令覆盖全部操作 | ✅ |
 
 ---
 
