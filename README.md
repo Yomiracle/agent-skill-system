@@ -50,6 +50,10 @@
 ## 快速开始
 
 ```bash
+# 可选：作为本地包安装，之后可直接使用 agent-skill 命令
+python3 -m pip install -e .
+agent-skill list
+
 # 查看技能库里有什么
 python3 engine/cli.py list
 

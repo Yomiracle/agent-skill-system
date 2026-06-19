@@ -1,0 +1,36 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "agent-skill-system"
+version = "1.0.3"
+description = "A zero-dependency skill memory, testing, and refinement engine for AI agents."
+readme = "README.md"
+requires-python = ">=3.10"
+license = { file = "LICENSE" }
+authors = [
+  { name = "Yomiracle" }
+]
+keywords = ["ai-agent", "skills", "memory", "testing", "prompt-engineering"]
+classifiers = [
+  "Development Status :: 4 - Beta",
+  "Intended Audience :: Developers",
+  "License :: OSI Approved :: MIT License",
+  "Programming Language :: Python :: 3",
+  "Programming Language :: Python :: 3.10",
+  "Programming Language :: Python :: 3.11",
+  "Programming Language :: Python :: 3.12",
+]
+dependencies = []
+
+[project.urls]
+Homepage = "https://github.com/Yomiracle/agent-skill-system"
+Repository = "https://github.com/Yomiracle/agent-skill-system"
+Issues = "https://github.com/Yomiracle/agent-skill-system/issues"
+
+[project.scripts]
+agent-skill = "engine.cli:main"
+
+[tool.setuptools]
+packages = ["engine"]

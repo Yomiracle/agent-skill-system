@@ -8,6 +8,8 @@ import unittest
 from pathlib import Path
 from unittest.mock import patch
 
+sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
+
 from engine.bank import SkillBank
 from engine.creator import CreationTask, SkillCreator
 from engine.llm import llm_call, llm_call_json

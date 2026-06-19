@@ -23,10 +23,12 @@ jobs:
     
     - name: Run all test suites
       run: |
-        python3 -m unittest -v engine.test_hardening engine.test_full_pipeline
+        python3 -m pip install -e .
+        python3 -m unittest -v engine.test_hardening engine.test_full_pipeline engine.test_engine
         python3 engine/test_c4_create.py
         python3 engine/test_constitution.py
         python3 engine/test_c1_hard.py
         python3 engine/test_c2_runner.py
         python3 engine/test_c3_refiner.py
+        python3 -c "import sys; sys.path.insert(0, 'engine'); import test_runner"
         python3 -m compileall -q engine

@@ -13,22 +13,11 @@ from engine.refiner import (
 )
 from engine.test_runner import CheckItem, TestRunner, mock_agent_output
 from engine.bank import SkillBank
+from engine.fixture_support import ensure_test_skill_fixture
 
-SKILLS_DIR = str(Path(__file__).parent.parent / "skills")
-
-# ── 自建测试fixture ──
-import os as _os
-_fixture_dir = str(Path(__file__).parent.parent / "skills" / "__test_skill__")
-_tests_dir = _fixture_dir + "/tests"
-_os.makedirs(_tests_dir, exist_ok=True)
-if not _os.path.exists(_fixture_dir + "/SKILL.md"):
-    open(_fixture_dir + "/SKILL.md","w").write("""# __test_skill__\nEngine test fixture.\n## 目标\n测试引擎。\n## 硬规则\n- 【必须】always return valid JSON\n- 【禁止】never output raw SQL\n## 流程\n1. Parse\n2. Apply rules\n3. Return""")
-    open(_fixture_dir + "/.memory.md","w").write("# 技能记忆：__test_skill__\n## 有效经验\n### 2026-06-12 [成功] test\n- 场景：auto\n- 做法：fixture\n- 要点：minimal")
-    open(_fixture_dir + "/config.json","w").write('{"name":"__test_skill__","version":"1.0.0","description":"Engine test fixture","trigger_keywords":["test"],"tags":["test"],"dependencies":[],"max_context_percent":30,"created_at":"2026-06-12T00:00:00Z","last_used_at":"2026-06-12T00:00:00Z"}')
-    open(_tests_dir + "/index.json","w").write('{"test_cases":[{"id":"case-001-check","file":"case-001-check.md","description":"输出验证","expected_result":"pass"},{"id":"case-002-no-sql","file":"case-002-no-sql.md","description":"禁用SQL","expected_result":"pass"},{"id":"case-003-contains","file":"case-003-contains.md","description":"内容验证","expected_result":"pass"}]}')
-    open(_tests_dir + "/case-001-check.md","w").write("# case-001\n## 输入\n```yaml\ntask: test\n```\n## 期望输出检查\n### 结构检查\n- [ ] 出现了 \"result\"\n### 内容检查\n- [ ] 解释了为什么")
-    open(_tests_dir + "/case-002-no-sql.md","w").write("# case-002\n## 输入\n```yaml\ntask: test\n```\n## 期望输出检查\n### 边界检查\n- [ ] \"SELECT\"出现次数 < 2")
-    open(_tests_dir + "/case-003-contains.md","w").write("# case-003\n## 输入\n```yaml\ntask: test\n```\n## 期望输出检查\n### 内容检查\n- [ ] 以下之一：result、output、done")
+FIXTURE_TMP = tempfile.mkdtemp(prefix="skill_fixture_")
+SKILLS_DIR = str(Path(FIXTURE_TMP) / "skills")
+ensure_test_skill_fixture(SKILLS_DIR)
 
 PASS = 0
 FAIL = 0
@@ -51,20 +40,6 @@ def section(title):
 section("T1: FailureDiagnoser 诊断准确性")
 
 skill_md = Path(SKILLS_DIR + "/__test_skill__/SKILL.md").read_text(encoding="utf-8")
-
-# ── 自建测试fixture ──
-import os as _os
-_fixture_dir = str(Path(__file__).parent.parent / "skills" / "__test_skill__")
-_tests_dir = _fixture_dir + "/tests"
-_os.makedirs(_tests_dir, exist_ok=True)
-if not _os.path.exists(_fixture_dir + "/SKILL.md"):
-    open(_fixture_dir + "/SKILL.md","w").write("""# __test_skill__\nEngine test fixture.\n## 目标\n测试引擎。\n## 硬规则\n- 【必须】always return valid JSON\n- 【禁止】never output raw SQL\n## 流程\n1. Parse\n2. Apply rules\n3. Return""")
-    open(_fixture_dir + "/.memory.md","w").write("# 技能记忆：__test_skill__\n## 有效经验\n### 2026-06-12 [成功] test\n- 场景：auto\n- 做法：fixture\n- 要点：minimal")
-    open(_fixture_dir + "/config.json","w").write('{"name":"__test_skill__","version":"1.0.0","description":"Engine test fixture","trigger_keywords":["test"],"tags":["test"],"dependencies":[],"max_context_percent":30,"created_at":"2026-06-12T00:00:00Z","last_used_at":"2026-06-12T00:00:00Z"}')
-    open(_tests_dir + "/index.json","w").write('{"test_cases":[{"id":"case-001-check","file":"case-001-check.md","description":"输出验证","expected_result":"pass"},{"id":"case-002-no-sql","file":"case-002-no-sql.md","description":"禁用SQL","expected_result":"pass"},{"id":"case-003-contains","file":"case-003-contains.md","description":"内容验证","expected_result":"pass"}]}')
-    open(_tests_dir + "/case-001-check.md","w").write("# case-001\n## 输入\n```yaml\ntask: test\n```\n## 期望输出检查\n### 结构检查\n- [ ] 出现了 \"result\"\n### 内容检查\n- [ ] 解释了为什么")
-    open(_tests_dir + "/case-002-no-sql.md","w").write("# case-002\n## 输入\n```yaml\ntask: test\n```\n## 期望输出检查\n### 边界检查\n- [ ] \"SELECT\"出现次数 < 2")
-    open(_tests_dir + "/case-003-contains.md","w").write("# case-003\n## 输入\n```yaml\ntask: test\n```\n## 期望输出检查\n### 内容检查\n- [ ] 以下之一：result、output、done")
 
 d = FailureDiagnoser(skill_md)
 
@@ -106,20 +81,6 @@ os.makedirs(skill_tmp, exist_ok=True)
 
 # 复制 SKILL.md
 src_skill = Path(SKILLS_DIR + "/__test_skill__/SKILL.md").read_text(encoding="utf-8")
-
-# ── 自建测试fixture ──
-import os as _os
-_fixture_dir = str(Path(__file__).parent.parent / "skills" / "__test_skill__")
-_tests_dir = _fixture_dir + "/tests"
-_os.makedirs(_tests_dir, exist_ok=True)
-if not _os.path.exists(_fixture_dir + "/SKILL.md"):
-    open(_fixture_dir + "/SKILL.md","w").write("""# __test_skill__\nEngine test fixture.\n## 目标\n测试引擎。\n## 硬规则\n- 【必须】always return valid JSON\n- 【禁止】never output raw SQL\n## 流程\n1. Parse\n2. Apply rules\n3. Return""")
-    open(_fixture_dir + "/.memory.md","w").write("# 技能记忆：__test_skill__\n## 有效经验\n### 2026-06-12 [成功] test\n- 场景：auto\n- 做法：fixture\n- 要点：minimal")
-    open(_fixture_dir + "/config.json","w").write('{"name":"__test_skill__","version":"1.0.0","description":"Engine test fixture","trigger_keywords":["test"],"tags":["test"],"dependencies":[],"max_context_percent":30,"created_at":"2026-06-12T00:00:00Z","last_used_at":"2026-06-12T00:00:00Z"}')
-    open(_tests_dir + "/index.json","w").write('{"test_cases":[{"id":"case-001-check","file":"case-001-check.md","description":"输出验证","expected_result":"pass"},{"id":"case-002-no-sql","file":"case-002-no-sql.md","description":"禁用SQL","expected_result":"pass"},{"id":"case-003-contains","file":"case-003-contains.md","description":"内容验证","expected_result":"pass"}]}')
-    open(_tests_dir + "/case-001-check.md","w").write("# case-001\n## 输入\n```yaml\ntask: test\n```\n## 期望输出检查\n### 结构检查\n- [ ] 出现了 \"result\"\n### 内容检查\n- [ ] 解释了为什么")
-    open(_tests_dir + "/case-002-no-sql.md","w").write("# case-002\n## 输入\n```yaml\ntask: test\n```\n## 期望输出检查\n### 边界检查\n- [ ] \"SELECT\"出现次数 < 2")
-    open(_tests_dir + "/case-003-contains.md","w").write("# case-003\n## 输入\n```yaml\ntask: test\n```\n## 期望输出检查\n### 内容检查\n- [ ] 以下之一：result、output、done")
 
 Path(f"{skill_tmp}/SKILL.md").write_text(src_skill, encoding="utf-8")
 
@@ -238,6 +199,8 @@ print(f"{'='*50}")
 
 if FAIL > 0:
     print(f"\n⚠️  {FAIL} 项失败")
+    shutil.rmtree(FIXTURE_TMP, ignore_errors=True)
     sys.exit(1)
 else:
+    shutil.rmtree(FIXTURE_TMP, ignore_errors=True)
     print("\n✅ C3 精炼引擎验证通过")

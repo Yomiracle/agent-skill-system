@@ -9,7 +9,10 @@ import re
 from pathlib import Path
 from dataclasses import dataclass, field
 from typing import Callable, Optional
-from .io_utils import safe_child, validate_path_component
+try:
+    from .io_utils import safe_child, validate_path_component
+except ImportError:
+    from io_utils import safe_child, validate_path_component
 
 
 @dataclass

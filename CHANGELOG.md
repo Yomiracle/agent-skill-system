@@ -2,6 +2,20 @@
 
 ## Unreleased
 
+## v1.0.3 (2026-06-19)
+
+### Packaging
+- Add `pyproject.toml` so the project can be installed with `pip install -e .`.
+- Expose the `agent-skill` console command through package metadata.
+- Document editable local installation in `README.md`.
+
+### Testing
+- Move duplicated script-test fixture setup into `engine.fixture_support`.
+- Run C1/C2/C3 tests against temporary skill banks instead of repository data.
+- Add CI coverage for editable installation, `engine.test_engine`, and script-style `test_runner` imports.
+
+## v1.0.2 (2026-06-19)
+
 ### Security
 - Reject skill and test paths containing traversal or nested path components.
 - Execute `LLM_COMMAND` without a shell to prevent command injection.
