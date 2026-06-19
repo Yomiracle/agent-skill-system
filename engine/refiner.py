@@ -254,7 +254,7 @@ class FixApplier:
         updated = self._append_to_section(skill, new_rule, ("## 规则清单", "## 硬规则"))
         if updated == skill:
             return ""
-        self.skill_path.write_text(updated, encoding="utf-8")
+        atomic_write_text(self.skill_path, updated)
         return action
 
     def _correct_rule(self, d: FailureDiagnosis) -> str:
@@ -264,7 +264,7 @@ class FixApplier:
         if note in skill:
             return ""
         updated = self._append_to_section(skill, note, ("## 自动精炼建议",))
-        self.skill_path.write_text(updated, encoding="utf-8")
+        atomic_write_text(self.skill_path, updated)
         return f"SKILL.md: 记录冲突规则建议 [{d.check.text[:40]}]"
 
     def _correct_memory(self, d: FailureDiagnosis) -> str:
@@ -290,7 +290,7 @@ class FixApplier:
         updated = self._append_to_section(skill, checkpoint, ("## 流程",))
         if updated == skill:
             return ""
-        self.skill_path.write_text(updated, encoding="utf-8")
+        atomic_write_text(self.skill_path, updated)
         return f"SKILL.md: 强化流程检查点 [{d.check.text[:40]}]"
 
     def _relax_test(self, d: FailureDiagnosis) -> str:

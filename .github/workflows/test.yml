@@ -26,4 +26,7 @@ jobs:
         python3 -m unittest -v engine.test_hardening engine.test_full_pipeline
         python3 engine/test_c4_create.py
         python3 engine/test_constitution.py
+        python3 engine/test_c1_hard.py
+        python3 engine/test_c2_runner.py
+        python3 engine/test_c3_refiner.py
         python3 -m compileall -q engine

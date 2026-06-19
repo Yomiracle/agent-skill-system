@@ -156,7 +156,7 @@ class MemoryEntry:
             MemoryType.FAILURE: "失败",
             MemoryType.CORRECTION: "修正",
         }
-        return self.raw_text or f"### {self.date} [{type_label[self.type]}] {self.title}\n- 场景：{self.scene}\n- {self.detail}\n"
+        return self.raw_text or f"### {self.date} [{type_label[self.type]}] {self.title}\n- 场景：{self.scene}\n{self.detail}\n"
 
 
 @dataclass

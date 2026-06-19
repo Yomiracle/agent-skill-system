@@ -26,8 +26,12 @@ class SkillBank:
     def load_index(self) -> SkillBankIndex:
         """从 skills/config.json 加载索引，不存在则创建空索引"""
         if self.index_path.exists():
-            raw = json.loads(self.index_path.read_text(encoding="utf-8"))
-            self._index = SkillBankIndex.from_dict(raw)
+            try:
+                raw = json.loads(self.index_path.read_text(encoding="utf-8"))
+            except json.JSONDecodeError:
+                self._index = SkillBankIndex(version="1.0", skills=[])
+            else:
+                self._index = SkillBankIndex.from_dict(raw)
         else:
             self._index = SkillBankIndex(version="1.0", skills=[])
         return self._index

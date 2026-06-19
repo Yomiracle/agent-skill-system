@@ -10,7 +10,8 @@ from unittest.mock import patch
 
 from engine.bank import SkillBank
 from engine.creator import CreationTask, SkillCreator
-from engine.llm import llm_call
+from engine.llm import llm_call, llm_call_json
+from engine.memory import MemoryManager
 from engine.models import SkillEntry, SkillStatus
 from engine.refiner import FailureCategory, FailureDiagnosis, FixApplier
 from engine.test_runner import CheckItem, TestRunner
@@ -69,6 +70,25 @@ class HardeningTest(unittest.TestCase):
         result = runner.evaluate("skill", lambda _name, _input: "anything")
         self.assertEqual((result.passed, result.failed), (0, 1))
 
+    def test_corrupt_bank_index_loads_as_empty(self):
+        (self.bank_dir / "config.json").write_text("{not json", encoding="utf-8")
+        index = SkillBank(str(self.bank_dir)).load_index()
+        self.assertEqual(index.version, "1.0")
+        self.assertEqual(index.skills, [])
+
+    def test_memory_append_success_does_not_double_bullet(self):
+        skill_dir = self.bank_dir / "skill"
+        skill_dir.mkdir()
+        MemoryManager(str(skill_dir)).append_success(
+            title="ok",
+            scene="scene",
+            approach="approach",
+            takeaway="takeaway",
+        )
+        content = (skill_dir / ".memory.md").read_text(encoding="utf-8")
+        self.assertNotIn("- - ", content)
+        self.assertIn("- 做法：approach", content)
+
     def test_creator_requires_real_test_executor(self):
         def distill(_task):
             return {
@@ -126,6 +146,15 @@ class HardeningTest(unittest.TestCase):
             output = llm_call("prompt")
         self.assertTrue(output.startswith("ok"))
         self.assertFalse(marker.exists())
+
+    def test_llm_json_parse_error_is_runtime_error(self):
+        command = f"{sys.executable} -c 'print(\"not json\")'"
+        with patch.dict(os.environ, {
+            "LLM_COMMAND": command,
+            "LLM_TIMEOUT": "2",
+        }, clear=False):
+            with self.assertRaisesRegex(RuntimeError, "failed to parse JSON response"):
+                llm_call_json("prompt")
 
 
 if __name__ == "__main__":

@@ -98,4 +98,12 @@ def llm_call_json(prompt: str, system: str = "") -> dict:
         end = response.index("```", start)
         response = response[start:end].strip()
     
-    return json.loads(response)
+    try:
+        return json.loads(response)
+    except json.JSONDecodeError as e:
+        preview = response[:200].replace("\n", " ")
+        raise RuntimeError(
+            "llm_call_json failed to parse JSON response: "
+            f"{e.msg} at line {e.lineno} column {e.colno}; "
+            f"response preview: {preview!r}"
+        ) from e
