@@ -30,5 +30,5 @@ jobs:
         python3 engine/test_c3_refiner.py
         python3 engine/test_c4_create.py
         python3 engine/test_constitution.py
-        python3 -c "import sys; sys.path.insert(0, 'engine'); import test_runner"
+        python3 -m engine.test_runner
         python3 -m compileall -q engine
