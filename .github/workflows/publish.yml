@@ -1,0 +1,67 @@
+name: Publish to PyPI
+
+on:
+  release:
+    types: [published]
+
+permissions: {}
+
+jobs:
+  build:
+    name: Build distribution
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Run tests
+        run: |
+          python3 -m pip install -e .
+          python3 -m unittest -v engine.test_hardening engine.test_full_pipeline engine.test_engine
+          python3 engine/test_c1_hard.py
+          python3 engine/test_c2_runner.py
+          python3 engine/test_c3_refiner.py
+          python3 engine/test_c4_create.py
+          python3 engine/test_constitution.py
+          python3 -m engine.test_runner
+          python3 -m compileall -q engine
+
+      - name: Install build tools
+        run: python3 -m pip install --upgrade build twine
+
+      - name: Build package
+        run: python3 -m build
+
+      - name: Check package metadata
+        run: python3 -m twine check dist/*
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: python-package-distributions
+          path: dist/
+
+  publish:
+    name: Publish distribution to PyPI
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: pypi
+      url: https://pypi.org/project/agent-skill-system/
+    permissions:
+      contents: read
+      id-token: write
+
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          name: python-package-distributions
+          path: dist/
+
+      - name: Publish package distributions to PyPI
+        uses: pypa/gh-action-pypi-publish@release/v1
