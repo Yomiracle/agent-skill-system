@@ -3,13 +3,13 @@
 Skill Engine CLI - command-line interface for skill management.
 
 Usage:
-  python3 engine/cli.py list                          # list all skills
-  python3 engine/cli.py search "review contract"      # search matching skills
-  python3 engine/cli.py load "contract-review"        # load skill -> stdout
-  python3 engine/cli.py memory "skill" success ...    # append memory entry
-  python3 engine/cli.py test -m "skill"               # run tests (mock mode)
-  python3 engine/cli.py health "skill"                # quick health check
-  python3 engine/cli.py stats "skill" [-r]            # show/sync usage stats
+  agent-skill list                          # list all skills
+  agent-skill search "review contract"      # search matching skills
+  agent-skill load "contract-review"        # load skill -> stdout
+  agent-skill memory "skill" success ...    # append memory entry
+  agent-skill test -m "skill"               # run tests (mock mode)
+  agent-skill health "skill"                # quick health check
+  agent-skill stats "skill" [-r]            # show/sync usage stats
 """
 
 import sys, json
