@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "agent-skill-system"
-version = "1.0.2"
+version = "1.0.4"
 description = "A zero-dependency skill memory, testing, and refinement engine for AI agents."
 readme = "README_EN.md"
 requires-python = ">=3.10"
