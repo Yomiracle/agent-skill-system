@@ -13,3 +13,5 @@ skills/__test_skill__/
 
 # 排除推广草稿
 05-抖音发布版.md
+dist/
+*.egg-info/
